@@ -133,13 +133,13 @@ getTableIndexFromEventTime <- function(CET, AET, ET, event.type, ETT){
 
   if(event.type == "ana"){
 
-    if(length(which(AET$abs_event_time == ET))==1) {
-      index <- which(AET$abs_event_time == ET)
+    if(length(which(AET$time_bp == ET))==1) {
+      index <- which(AET$time_bp == ET)
       node <- AET$node[index]
 
     } else {
 
-      index <- which(AET$abs_event_time == ET & !AET$node %in% ETT$node)[1]
+      index <- which(AET$time_bp == ET & !AET$node %in% ETT$node)[1]
       node <- AET$node[index]
     }
   }
