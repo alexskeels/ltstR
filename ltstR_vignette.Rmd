@@ -36,7 +36,7 @@ Now install ltstR from the github repository
 library(ltstR)
 ```
 
-```{r echo=T, tidy=T, warning=F, eval=F}
+```{r echo=T, tidy=T, warning=F, eval=T}
 
 devtools::install_github(repo="alexskeels/ltstR")
 
@@ -57,7 +57,7 @@ library(ltstR)
 path <- "C:/path/to/appendix/directory"
 setwd(path)
 
-functions <- list("getLTSTDataTable.R","getLTSTFromStochasticMaps.R","getRangeState.R","LTST_vignette.html","slidingWindowForStochasticMaps.R","timeRangeAcrossStochasticMaps.R","getEventTiming.R")
+functions <- list("getLTSTDataTable.R","getLTSTFromStochasticMaps.R","getRangeState.R","LTST_vignette.html","slidingWindowForStochasticMaps.R","timeRangeAcrossStochasticMaps.R","getEventTiming.R", "correctNodeHeights.R")
 
 lapply(functions, source)
 ```
@@ -121,18 +121,17 @@ head(AET[[1]][1:10])
 Firstly we will load data from a single BSM and transform it into an LTST data table that has time steps as rows, and regions as columns, with each region/time-step being populated by a value of species diversity. In other words, species diversity through time for each region.
 
 ```{r include=T}
+data(Agamidae)
 # we encounter a bug when a tree has many nodes of the same height
 # a temporrary workaround for this is to add small deviates onto the node heights in the CET and AET tables
-AET <- correctNodeHeights(AET)
-CET <- correctNodeHeights(CET)
+CAET <- correctNodeHeights(CET,AET)
+CET <- CAET[[1]]
+AET <- CAET[[2]]
 
-# select first stochastic map data
 CET_1 <- CET[[1]]
 AET_1 <- AET[[1]]
 
-# get the timing of all anagenetic and cladogenetic events: the events timing table (ETT) 
 ETT <- getEventTiming(tr, CET_1, AET_1)
-
 head(ETT)
 
 # create lookup table for the names of every different state combination identifier in the data
@@ -230,13 +229,13 @@ head(LTST_dt_list[[2]]$time)
 # this will present the current diveristy of each region
 
 # e.g., 
-single_window <- slidingWindowForStochasticMaps(tr, LTST_dt_list[[1]], window = 0.1)
+single_window <- slidingWindowForStochasticMaps(LTST_dt_list[[1]], window = 1)
 head(single_window)
 
 # we therefore want to apply it over the list if LTST data tabes
 # default window is 0.1
 
-window_dt_list <- lapply(LTST_dt_list, slidingWindowForStochasticMaps, tr=tr, window= 0.1)
+window_dt_list <- lapply(LTST_dt_list, slidingWindowForStochasticMaps, window= 1)
 
 # finally to plot the range of vlaues from across stochastic maps we want ot first summarise them
 # here we use the upper (97.5%) and lower (2.5%) quantiles
