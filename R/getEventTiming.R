@@ -104,6 +104,7 @@ isEventClado <- function(event.time, CET, AET){
   if(any(AET$time_bp == event.time)){ return("ana") }
 }
 
+
 #' @title getTableIndexFromEventTime
 #'
 #' @description for either the CET or AET finds the index (row number) and node number for the current event using the event time as a reference
