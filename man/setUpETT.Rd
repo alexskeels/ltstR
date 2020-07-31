@@ -11,6 +11,9 @@ setUpETT(states, CET)
 
 \item{CET}{the cladogenetic events table output from BGB analysis}
 }
+\value{
+an empty ETT data frame
+}
 \description{
 creates the initial (unfilled) events timing table from a vector of character states
 }

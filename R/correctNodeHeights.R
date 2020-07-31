@@ -8,26 +8,35 @@
 #' @export
 
 
-correctNodeHeights <- function(CAET, sd=0.01){
-  
-    if(class(CAET) == "data.frame"){
-      
-      CAET$time_bp <- CAET$time_bp + rnorm(length(CAET$time_bp), 0, sd)
-      while(!length(CAET$time_bp)== length(unique(CAET$time_bp))){
-        CAET$time_bp <- CAET$time_bp + rnorm(length(CAET$time_bp), 0, sd)        
+correctNodeHeights <- function(CET, AET, sd=0.01){
+
+    if(class(CET) == "data.frame"){
+
+      CET$time_bp <- CET$time_bp + rnorm(length(CET$time_bp), 0, sd)
+      AET$time_bp <- AET$time_bp + rnorm(length(AET$time_bp), 0, sd)
+
+      while(any(duplicated(c(CET$time_bp, AET$time_bp)))){
+        CET$time_bp <- CET$time_bp + rnorm(length(CET$time_bp), 0, sd)
+        AET$time_bp <- AET$time_bp + rnorm(length(AET$time_bp), 0, sd)
       }
     }
-    if(class(CAET) == "list"){
-      
-      CAET <- lapply(CAET, FUN=function(x){x$time_bp <- x$time_bp + rnorm(length(x$time_bp), 0, sd); return(x)})
-      while(!all(unlist(lapply(CAET, FUN=function(x){length(x$time_bp)== length(unique(x$time_bp))})))){
-        CAET <- lapply(CAET, FUN=function(x){x$time_bp <- x$time_bp + rnorm(length(x$time_bp), 0, sd); return(x)})
-        
+    if(class(CET) == "list"){
+
+
+      CET <- lapply(CET, FUN=function(x){x$time_bp <- x$time_bp + rnorm(length(x$time_bp), 0, sd); return(x)})
+      AET <- lapply(AET, FUN=function(x){x$time_bp <- x$time_bp + rnorm(length(x$time_bp), 0, sd); return(x)})
+
+      for(i in 1:length(CET)){
+
+        while(any(duplicated(c(CET[[i]]$time_bp, AET[[i]]$time_bp)))){
+          CET[[i]]$time_bp <- CET[[i]]$time_bp + rnorm(length(CET[[i]]$time_bp), 0, sd)
+          AET[[i]]$time_bp <- AET[[i]]$time_bp + rnorm(length(AET[[i]]$time_bp), 0, sd)
+        }
+
       }
-        
     }
 
-  
-  return(CAET)
-  
+
+  return(list(CET, AET))
+
 }

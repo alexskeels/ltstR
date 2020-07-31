@@ -16,9 +16,7 @@
 getEventTiming <- function(tree, CET, AET){
 
   CET_k <- CET
-  CET_k$time_bp <- round(CET_k$time_bp, 6)
   AET_k <-AET
-  AET_k$abs_event_time <-  round(AET_k$abs_event_time, 6)
   # get a vector of all named character states
   states <- unique(c(CET_k$sampled_states_AT_nodes, AET_k$current_rangenum_1based))
   # setUpETT creates a event timing table (ETT)
@@ -29,7 +27,7 @@ getEventTiming <- function(tree, CET, AET){
 
   # iterate through each event along the branches of the phlogeny forward through time (not including the tips)
   for (j in 1:((length(CET_k[,1])+length(AET_k[,1])))){
-
+    #if(j <- 535){fadf}
     # is the current event cladogenetic? - returns logical (TRUE for cladogenetic or FALSE for anagenetic)
     clado <- isEventClado(event.time, CET_k, AET_k)
 
@@ -269,7 +267,7 @@ whichStateChangesAna <- function(x, ETT, ET, index){
 
 nextEventTime <- function(CET, AET, ET) {
 
-  event.timing <- c(CET$time_bp, AET$abs_event_time)
+  event.timing <- c(CET$time_bp, AET$time_bp)
 
   order.event <- event.timing[order(event.timing)]
 

@@ -4,12 +4,12 @@
 \alias{correctNodeHeights}
 \title{correctNodeHeights}
 \usage{
-correctNodeHeights(CAET, sd = 0.01)
+correctNodeHeights(CET, AET, sd = 0.01)
 }
 \arguments{
-\item{CAET}{List or singular cladogenetic events or anagenetic events tables from a BSM analysis.}
-
 \item{sd}{Standard deiation of normal deviate to add to node heights}
+
+\item{CAET}{List or singular cladogenetic events or anagenetic events tables from a BSM analysis.}
 }
 \value{
 CAET
