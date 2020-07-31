@@ -269,7 +269,7 @@ whichStateChangesAna <- function(x, ETT, ET, index){
 
 nextEventTime <- function(CET, AET, ET) {
 
-  event.timing <- round(c(CET$time_bp, AET$abs_event_time), 6)
+  event.timing <- c(CET$time_bp, AET$abs_event_time)
 
   order.event <- event.timing[order(event.timing)]
 
