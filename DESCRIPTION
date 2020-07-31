@@ -1,0 +1,10 @@
+Package: ltstR
+Type: Package
+Title: Lineages Through Space and Time in R: extracting and plotting spatial and temporal diversification patterns from BioGeoBEARs
+Version: 0.1.0
+Author: Alexander Skeels
+Maintainer: Alex Skeels <alexander.skeels@gmail.com>
+Description: ltstR presents tools to extract temporal diversity information across different biogeographic regions from the output of commonly used ancestral range estimation models implemented in the R package BioGeoBEARS. The lineages through space and time (LTST) plots allows for visualisation of diversification dynamics in different regions, formatted in an accessible way which can be used for further quantitative analysis.
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1

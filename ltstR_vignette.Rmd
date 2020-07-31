@@ -1,0 +1,274 @@
+---
+title: 'Lineages Through Space and Time in R: a worked example using the global distribution of dragon lizards (family Agamidae)'
+author: "Alexander Skeels"
+
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Required Data
+
+Generating LTST plots requires information on ancestral geographic states obtained from ancestral state estimation analysis using BioGeoBEARs. Once users have performed a BioGeoBEARS analysis, have selected a model of best-fit, and generated biogeographic stochastic maps from this model and its parameters, users should have the four objects necessary to continue.
+
+First load the required packages
+
+
+```{r include=T, message=F, warning=F}
+library(BioGeoBEARS)
+library(phytools)
+library(reshape2)
+library(ggplot2)
+library(stringr)
+library(devtools)
+library(RColorBrewer)
+```
+
+
+Now install ltstR from the github repository
+
+```{r echo=F, eval=T, tidy=T, message=F}
+library(ltstR)
+```
+
+```{r echo=T, tidy=T, warning=F, eval=F}
+
+devtools::install_github(repo="alexskeels/ltstR")
+
+library(ltstR)
+
+
+# users can query the different functions to get a description of what they do. e.g.,
+
+?getEventTiming
+
+?getRangeState
+
+```
+
+```{r eval=F}
+# users can alternatively load the R functions from the appendix
+
+path <- "C:/path/to/appendix/directory"
+setwd(path)
+
+functions <- list("getLTSTDataTable.R","getLTSTFromStochasticMaps.R","getRangeState.R","LTST_vignette.html","slidingWindowForStochasticMaps.R","timeRangeAcrossStochasticMaps.R","getEventTiming.R")
+
+lapply(functions, source)
+```
+
+
+
+
+For further information on each function or to get the code to modify these functions users can find the commented code in the R folder on the gitub page: 
+www.github.com/alexskeels/ltstR
+
+The ltstR package comes with the data necessary to create LTST plots for the agamid lizards.
+
+```{r include=T}
+# first load the data
+data(Agamidae)
+
+```
+```{r eval=F}
+# or alternatively from the appenidx
+setwd(path)
+load("Agamidae.RData")
+```
+```{r include=T}
+
+# view the objects
+
+ls()
+
+# can have a look at the different objects
+
+# tr is the phylogeny
+# tipranges is the BioGeoBEARs geography object
+# CET is the cladogenetic events table
+# AET is the anagenetic events table
+
+# the phylogeny
+plot(tr, cex=0.1,  edge.width = 0.6)
+
+# the geographic data
+# W, I, P, and A are all single letter variable names associated with four biogeographic realms: 
+# W = Wallacea/Australasia
+# I = Indomalaya
+# P = Palearctic
+# A = Afrotropics
+head(tipranges@df)
+
+# the cladogenetic events table list(CET)
+class(CET)
+class(CET[[1]])
+head(CET[[1]][1:10])
+
+# the anagenetic events table list(CET)
+class(AET)
+class(AET[[1]])
+head(AET[[1]][1:10])
+
+```
+
+# LTST plot from a single biogeographic stochastic map (BSM)
+
+Firstly we will load data from a single BSM and transform it into an LTST data table that has time steps as rows, and regions as columns, with each region/time-step being populated by a value of species diversity. In other words, species diversity through time for each region.
+
+```{r include=T}
+# we encounter a bug when a tree has many nodes of the same height
+# a temporrary workaround for this is to add small deviates onto the node heights in the CET and AET tables
+AET <- correctNodeHeights(AET)
+CET <- correctNodeHeights(CET)
+
+# select first stochastic map data
+CET_1 <- CET[[1]]
+AET_1 <- AET[[1]]
+
+# get the timing of all anagenetic and cladogenetic events: the events timing table (ETT) 
+ETT <- getEventTiming(tr, CET_1, AET_1)
+
+head(ETT)
+
+# create lookup table for the names of every different state combination identifier in the data
+range_states <- getRangeState(CET_1, AET_1, tipranges)
+
+range_states
+
+# reduce this to diversity information at each time step for each region
+LTST_dt <- getLTSTDataTable(ETT, range_states)
+
+# Now lets have a look at how the data looks now
+
+head(LTST_dt)
+
+```
+
+
+
+Now we can plot the LTST. Using ggplot is the most versatile way to do this, but requires melting the data first using the reshape package. Some knowledge of ggplot will be helpful for creating these plots, however the following code should suffice.
+
+
+```{r include=T}
+LTST_dt2 <- melt(LTST_dt, id.vars = 'time', variable.name = 'region')
+
+
+
+ggplot(LTST_dt2, aes(time, value)) + 
+  geom_line(aes(colour = region), size = 2, alpha = 0.7) + # size controls the line width # alpha controls the line transparency
+  theme_minimal()+ # makes background simple white colour
+  xlab("Time (myr)")+ # x axis label
+  ylab("Species Diversity")+ # y axis label
+  scale_x_reverse() # makes x axis go from largest values (oldest times) to smallest values (youngest times)
+
+
+# colours can also be selected from preexisting palettes, e.g.,
+
+ggplot(LTST_dt2, aes(time, value, colour=region)) + 
+  scale_color_brewer(palette="Dark2")+
+  geom_line(aes(colour = region), size = 2, alpha=0.7 ) +
+  theme_minimal()+
+  xlab("Time (myr)")+
+  ylab("Species Diversity")+
+  scale_x_reverse() 
+
+
+# can also plot of the log scale as is typical for LTT plots
+
+# first get rid of Inf values when taking log of 0
+LTST_dt2$logValue <- log(LTST_dt2$value)
+LTST_dt2$logValue[which(LTST_dt2$logValue == log(0))] <- 0 
+
+
+ggplot(LTST_dt2, aes(time, logValue, colour=region)) + 
+  scale_color_brewer(palette="Dark2")+
+  geom_line(aes(colour = region), size = 2, alpha = 0.7) +
+  theme_minimal()+
+  xlab("Time (myr)")+
+  ylab("log(Species Diversity)")+
+  scale_x_reverse()
+
+
+# more details on colours in ggplot can be found here
+# http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+
+```
+
+
+
+# LTST from a list of BSMs
+
+Alternatively, we can produce a LTST that accounts for uncertainty in the biogeographic estimation, by incorporating information from a number of different stochastic maps. In this case we have AET and CET objects that contain the results of 50 stochastic mapping simulations.
+
+```{r include=T}
+
+class(CET)
+class(AET)
+
+length(CET)
+length(AET)
+
+
+
+# create a list of bLTT curve data as we did above for each single stochastic map
+LTST_dt_list <- getLTSTFromStochasticMaps(tr, CET, AET, tipranges)
+
+# can see that times between stochastic maps are not exactly the same
+length(LTST_dt_list[[1]]$time)  
+length(LTST_dt_list[[2]]$time)
+head(LTST_dt_list[[1]]$time)  
+head(LTST_dt_list[[2]]$time)
+
+# We want to perform a moving window analysis to make each LTST data table comparable
+# the function slidingWindowForStochasticMaps does this for a single LTST_df
+# the first row, time 0, is the most recent sample in the phylogeny (usually the present day) 
+# this will present the current diveristy of each region
+
+# e.g., 
+single_window <- slidingWindowForStochasticMaps(tr, LTST_dt_list[[1]], window = 0.1)
+head(single_window)
+
+# we therefore want to apply it over the list if LTST data tabes
+# default window is 0.1
+
+window_dt_list <- lapply(LTST_dt_list, slidingWindowForStochasticMaps, tr=tr, window= 0.1)
+
+# finally to plot the range of vlaues from across stochastic maps we want ot first summarise them
+# here we use the upper (97.5%) and lower (2.5%) quantiles
+# melt = T presnet the output in a way that is useful for plotting with ggplot2
+
+LTST_dt_quantiles <- timeRangeAcrossStochasticMaps(tr, window_dt_list, melt=T)
+
+# plot range of data from stochastic mapping
+ggplot(aes(x=time, ymin=lowerQ, ymax=upperQ, colour=region, fill=region), data=LTST_dt_quantiles)+ 
+  geom_ribbon(alpha = 4/10)+
+  theme_minimal()+
+  xlab("Time (myr)")+
+  ylab("Species Diversity")+
+  scale_x_reverse()
+
+
+# and again on the log scale
+# first however have to get rid of values which are -inf which results from taking log(0)
+LTST_dt_quantiles$logU <- log(LTST_dt_quantiles$upperQ)
+LTST_dt_quantiles$logL <- log(LTST_dt_quantiles$lowerQ)
+LTST_dt_quantiles$logU[which(LTST_dt_quantiles$logU == log(0))] <- 0
+LTST_dt_quantiles$logL[which(LTST_dt_quantiles$logL == log(0))] <- 0
+#
+
+ggplot(aes(x=time, ymin=logL, ymax=logU, colour=region, fill=region), data=LTST_dt_quantiles)+ 
+  geom_ribbon(alpha = 4/10)+
+  theme_minimal()+
+  xlab("Time (myr)")+
+  ylab("Species Diversity")+
+  scale_x_reverse()
+
+```
+
+
+
