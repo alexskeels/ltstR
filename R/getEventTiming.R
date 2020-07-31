@@ -27,7 +27,8 @@ getEventTiming <- function(tree, CET, AET){
 
   # iterate through each event along the branches of the phlogeny forward through time (not including the tips)
   for (j in 1:((length(CET_k[,1])+length(AET_k[,1])))){
-    #if(j <- 535){fadf}
+
+
     # is the current event cladogenetic? - returns logical (TRUE for cladogenetic or FALSE for anagenetic)
     clado <- isEventClado(event.time, CET_k, AET_k)
 
@@ -274,6 +275,7 @@ nextEventTime <- function(CET, AET, ET) {
 
   nextEventTime <- order.event[which(order.event == ET)- 1]
 
+  if(order.event[which(order.event == ET)] == head(order.event)[1]){ nextEventTime=0}
   return(nextEventTime)
 }
 
