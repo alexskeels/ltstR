@@ -101,7 +101,7 @@ isEventClado <- function(event.time, CET, AET){
 
   if(any(CET$time_bp == event.time)){ return("clado") }
 
-  if(any(AET$abs_event_time == event.time)){ return("ana") }
+  if(any(AET$time_bp == event.time)){ return("ana") }
 }
 
 #' @title getTableIndexFromEventTime
